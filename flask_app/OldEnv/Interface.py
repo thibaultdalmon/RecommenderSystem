@@ -1,6 +1,5 @@
 import requests
 
-
 class Interface:
 
     def reset(self):

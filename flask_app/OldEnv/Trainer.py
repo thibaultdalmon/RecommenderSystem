@@ -1,11 +1,16 @@
+import DQN
+
 class Trainer:
 
-    def __init__(self, args):
-        pass
+    def __init__(self, interface):
+        self.dqn = DQN()
+        self.interface = interface
 
     def train():
-        pass
+        item_history = self.interface.item_history
+        rating_history = self.interface.rating_history
+        user_history = self.interface.user_history
+        DQN.train(user_history, item_history, rating_history)
 
     def predict(user_id, item_id):
-        pass
-        
+        DQN.predict(user_id, item_id)
