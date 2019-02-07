@@ -19,4 +19,4 @@ class Trainer:
         self.train()
 
     def predict(self, user_id, item_id):
-        self.dqn.predict(user_id, item_id)
+        return self.dqn.predict(user_id, item_id).item()

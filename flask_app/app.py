@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from OldEnv.Interface import Interface
 from OldEnv.Trainer import Trainer
 
+import numpy as np
+
 app = Flask(__name__)
 
 
@@ -25,10 +27,10 @@ def reset():
     return "done"
 
 
-@app.route("/request", methods=['GET', 'POST'])
+@app.route("/predict", methods=['GET', 'POST'])
 def predict():
-    user_id = request.args.get('user_id')
-    item_id = request.args.get('item_id')
+    user_id = np.array([[float(request.args.get('user_id'))]])
+    item_id = np.array([[float(request.args.get('item_id'))]])
     predicted_score = trainer.predict(user_id, item_id)
     d = {'predicted_score': predicted_score}
     return jsonify(d)

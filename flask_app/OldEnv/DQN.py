@@ -40,4 +40,4 @@ class DQN:
                        shuffle=True, callbacks=[early_stopping])
 
     def predict(self, user_id, item_id):
-        self.model.predict([user_id, item_id])
+        return self.model.predict([user_id, item_id])
