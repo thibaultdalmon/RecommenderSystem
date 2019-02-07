@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
-from OldEnv.Interface import Interface
-from OldEnv.Trainer import Trainer
+from Env0.Interface import Interface as Interface0
+from Env0.Trainer import Trainer as Trainer0
+from Env1.Interface import Interface as Interface1
+from Env1.Trainer import Trainer as Trainer1
 
 import numpy as np
 
@@ -14,10 +16,18 @@ class Argument:
 args = Argument
 args.user_id = 'R3EIFXNYY6XMBXBR01BK'
 args.ip_address_old_env = '52.47.62.31'
-args.ip_address_new_env = '35.180.46.68'
+args.ip_address_new_env = '35.180.254.42'
 
-interface = Interface(args)
-trainer = Trainer(interface)
+args.use_env = 1
+
+interface = None
+trainer = None
+if args.use_env == 0:
+    interface = Interface0(args)
+    trainer = Trainer0(interface)
+elif args.use_env == 1:
+    interface = Interface1(args)
+    trainer = Trainer1(interface)
 
 
 @app.route("/reset")
