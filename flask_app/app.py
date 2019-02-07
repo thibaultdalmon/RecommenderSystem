@@ -21,7 +21,8 @@ trainer = Trainer(interface)
 @app.route("/reset")
 def reset():
     interface.reset()
-    trainer.train()
+    trainer.reset()
+    return "done"
 
 
 @app.route("/request", methods=['GET', 'POST'])

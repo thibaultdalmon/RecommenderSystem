@@ -1,16 +1,22 @@
-import DQN
+from OldEnv.DQN import DQN
+
 
 class Trainer:
 
     def __init__(self, interface):
-        self.dqn = DQN()
         self.interface = interface
+        self.dqn = DQN(interface)
+        self.train()
 
-    def train():
+    def train(self):
         item_history = self.interface.item_history
         rating_history = self.interface.rating_history
         user_history = self.interface.user_history
-        DQN.train(user_history, item_history, rating_history)
+        self.dqn.train(user_history, item_history, rating_history)
 
-    def predict(user_id, item_id):
-        DQN.predict(user_id, item_id)
+    def reset(self):
+        self.dqn.reset()
+        self.train()
+
+    def predict(self, user_id, item_id):
+        self.dqn.predict(user_id, item_id)

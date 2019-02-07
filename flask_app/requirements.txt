@@ -2,3 +2,4 @@ Flask
 tensorflow
 gunicorn>=19.7.1
 anyrl
+keras
