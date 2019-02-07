@@ -15,7 +15,7 @@ args.ip_address_old_env = '52.47.62.31'
 args.ip_address_new_env = '35.180.46.68'
 
 interface = Interface(args)
-trainer = Trainer(args)
+trainer = Trainer(interface)
 
 
 @app.route("/reset")
