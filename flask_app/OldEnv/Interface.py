@@ -3,14 +3,11 @@ import requests
 
 class Interface:
 
-    def __init__(self, args):
-        base_url = 'http://{}'.format(args.ip_address_old_env)
-        self.url_reset = '{}/reset'.format(base_url)
-        self.url_predict = '{}/predict'.format(base_url)
+    def reset(self):
+        self.url_reset = '{}/reset'.format(self.base_url)
+        self.url_predict = '{}/predict'.format(self.base_url)
 
-        self.user_id = args.user_id
-
-        r = requests.get(url=self.url_reset, params={'user_id': args.user_id})
+        r = requests.get(url=self.url_reset, params={'user_id': self.user_id})
         data = r.json()
 
         self.item_history = data['item_history']
@@ -22,6 +19,12 @@ class Interface:
 
         self.next_user = data['next_user']
         self.next_item = data['next_item']
+
+
+    def __init__(self, args):
+        self.base_url = 'http://{}'.format(args.ip_address_old_env)
+        self.user_id = args.user_id
+        reset()
 
     def request(self, predicted_score):
         params = {}
@@ -36,6 +39,3 @@ class Interface:
         rating = result['rating']
 
         return next_user, next_item, rating
-
-    def serving(self, user_id, item_id):
-        pass
