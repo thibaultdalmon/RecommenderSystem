@@ -19,6 +19,7 @@ class Interface:
 
         self.nb_items = data['nb_items']
         self.nb_users = data['nb_users']
+        self.nb_variables = len(data['variables_history'][0])
 
         self.next_user = data['next_user']
         self.next_item = data['next_item']
@@ -32,12 +33,15 @@ class Interface:
         self.item_history = data['item_history']
         self.rating_history = data['rating_history']
         self.user_history = data['user_history']
+        self.variables_history = data['variables_history']
 
         self.nb_items = data['nb_items']
         self.nb_users = data['nb_users']
+        self.nb_variables = len(data['variables_history'][0])
 
         self.next_user = data['next_user']
         self.next_item = data['next_item']
+        self.next_variables = data['next_variables']
 
     def request(self, predicted_score):
         params = {}
@@ -49,6 +53,7 @@ class Interface:
 
         next_user = result['next_user']
         next_item = result['next_item']
+        next_variables = result['next_variables']
         rating = result['rating']
 
-        return next_user, next_item, rating
+        return next_user, next_item, next_variables, rating

@@ -41,7 +41,8 @@ def reset():
 def predict():
     user_id = np.array([[float(request.args.get('user_id'))]])
     item_id = np.array([[float(request.args.get('item_id'))]])
-    predicted_score = trainer.predict(user_id, item_id)
+    metadata = np.array([[float(request.args.get('metadata'))]])
+    predicted_score = trainer.predict(user_id, item_id, metadata)
     d = {'predicted_score': predicted_score}
     return jsonify(d)
 
