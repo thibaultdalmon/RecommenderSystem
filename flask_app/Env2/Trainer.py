@@ -1,4 +1,4 @@
-from Env1.DQN import DQN
+from Env2.DQN import DQN
 
 
 class Trainer:
