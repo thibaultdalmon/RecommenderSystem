@@ -9,11 +9,10 @@ class Trainer:
         self.train()
 
     def train(self):
-        item_history = self.interface.item_history
-        rating_history = self.interface.rating_history
-        user_history = self.interface.user_history
-        variables_history = self.interface.variables_history
-        self.dqn.train(user_history, item_history, variables_history, rating_history)
+        state_history = self.interface.state_history
+        reward_history = self.interface.reward_history
+        action_history = self.interface.action_history
+        self.dqn.train(state_history, reward_history, action_history)
 
     def reset(self):
         self.dqn.reset()

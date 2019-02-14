@@ -41,10 +41,10 @@ class DQN:
         self.model = Model(inputs=[user_id_input, item_id_input,
             metadata_input], outputs=y)
         self.model.compile(optimizer='adam', loss='mean_squared_error')
-        self.model.save('Env0/Models/initial_weight.h5')
+        self.model.save('Env1/Models/initial_weight.h5')
 
     def reset(self):
-        self.model = load_model('Env0/Models/initial_weight.h5')
+        self.model = load_model('Env1/Models/initial_weight.h5')
 
     def train(self, user_id_train, item_id_train, metadata, rating_train):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
