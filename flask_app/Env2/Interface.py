@@ -12,48 +12,40 @@ class Interface:
         r = requests.get(url=self.url_reset, params={'user_id': self.user_id})
         data = r.json()
 
-        self.item_history = data['item_history']
-        self.rating_history = data['rating_history']
-        self.user_history = data['user_history']
-        self.variables_history = data['variables_history']
+        self.state_history = data['state_history']
+        self.reward_history = data['reward_history']
+        self.action_history = data['action_history']
 
         self.nb_items = data['nb_items']
         self.nb_users = data['nb_users']
-        self.nb_variables = len(data['variables_history'][0])
+        self.nb_variables = len(self.action_history[0])-2
 
-        self.next_user = data['next_user']
-        self.next_item = data['next_item']
-        self.next_variables = data['next_variables']
+        self.next_state = data['next_state']
 
     def reset(self):
 
         r = requests.get(url=self.url_reset, params={'user_id': self.user_id})
         data = r.json()
 
-        self.item_history = data['item_history']
-        self.rating_history = data['rating_history']
-        self.user_history = data['user_history']
-        self.variables_history = data['variables_history']
+        self.state_history = data['state_history']
+        self.reward_history = data['reward_history']
+        self.action_history = data['action_history']
 
         self.nb_items = data['nb_items']
         self.nb_users = data['nb_users']
-        self.nb_variables = len(data['variables_history'][0])
+        self.nb_variables = len(self.action_history[0])-2
 
-        self.next_user = data['next_user']
-        self.next_item = data['next_item']
-        self.next_variables = data['next_variables']
+        self.next_state = data['next_state']
 
-    def request(self, predicted_score):
+    def predict(self, recommended_item):
         params = {}
         params['user_id'] = self.user_id
-        params['predicted_score'] = predicted_score
+        params['recommended_item'] = recommended_item
 
         r = requests.get(url=self.url_predict, params=params)
         result = r.json()
 
-        next_user = result['next_user']
-        next_item = result['next_item']
-        next_variables = result['next_variables']
-        rating = result['rating']
+        reward = result['reward']
+        state = result['state']
 
-        return next_user, next_item, next_variables, rating
+        return reward, state
