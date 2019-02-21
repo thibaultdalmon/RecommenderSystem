@@ -1,4 +1,5 @@
-from keras.layers import (Input, Embedding, Flatten, Dot, Dense, Concatenate, Dropout)
+from keras.layers import Input, Embedding, Flatten, Dot, Dense, Concatenate
+from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
 import keras.backend as K
@@ -16,40 +17,62 @@ class DQN:
         item_id_input_n = Input(shape=(1,), name='item_n')
         metadata_input_n = Input(shape=(interface.nb_variables,), name='metadata_n')
 
-        embedding_size = 30
-        user_embedding_p, user_embedding_n = Embedding(output_dim=embedding_size,
-            input_dim=interface.nb_users + 1,
-            input_length=1, name='user_embedding')(user_id_input_p, user_id_input_n)
+        batch_metadata = BatchNormalization()
+        batch_metadata_p = batch_metadata(metadata_input_p)
+        batch_metadata_n = batch_metadata(metadata_input_n)
 
-        item_embedding_p, item_embedding_n = Embedding(output_dim=embedding_size,
+        embedding_size = 30
+        user_embedding = Embedding(output_dim=embedding_size,
+            input_dim=interface.nb_users + 1,
+            input_length=1, name='user_embedding')
+        user_embedding_p = user_embedding(user_id_input_p)
+        user_embedding_n = user_embedding(user_id_input_n)
+
+        embedding_item = Embedding(output_dim=embedding_size,
             input_dim=interface.nb_items + 1,
-            input_length=1, name='item_embedding')(item_id_input_p, item_id_input_n)
+            input_length=1, name='item_embedding')
+        item_embedding_p = embedding_item(item_id_input_p)
+        item_embedding_n = embedding_item(item_id_input_n)
 
         # reshape from shape: (batch_size, input_length, embedding_size)
         # to shape: (batch_size, input_length * embedding_size) which is
         # equal to shape: (batch_size, embedding_size)
-        user_vecs_p, user_vecs_n = Flatten()(user_embedding_p, user_embedding_n)
-        item_vecs_p, item_vecs_n = Flatten()(item_embedding_p, item_embedding_n)
+        user_vecs_p = Flatten()(user_embedding_p)
+        user_vecs_n = Flatten()(user_embedding_n)
+        item_vecs_p = Flatten()(item_embedding_p)
+        item_vecs_n = Flatten()(item_embedding_n)
         # metadata_vecs = Flatten()(metadata_input)
         conc = Concatenate(axis=1)
-        conc_p = conc([user_vecs_p, item_vecs_p, metadata_input_p])
-        conc_n = conc([user_vecs_n, item_vecs_n, metadata_input_n])
+        conc_p = conc([user_vecs_p, item_vecs_p, batch_metadata_p])
+        conc_n = conc([user_vecs_n, item_vecs_n, batch_metadata_n])
+
+        batch_2 = BatchNormalization()
+        batch_2_p = batch_2(conc_p)
+        batch_2_n = batch_2(conc_n)
 
         dense_1 = Dense(256, activation='relu')
-        dense_1_p = dense_1(conc_p)
-        dense_1_n = dense_1(conc_n)
+        dense_1_p = dense_1(batch_2_p)
+        dense_1_n = dense_1(batch_2_n)
+
+        batch_3 = BatchNormalization()
+        batch_3_p = batch_3(dense_1_p)
+        batch_3_n = batch_3(dense_1_n)
 
         dropout_1 = Dropout(0.5)
-        dropout_1_p = dropout_1(dense_1_p)
-        dropout_1_n = dropout_1(dense_1_n)
+        dropout_1_p = dropout_1(batch_3_p)
+        dropout_1_n = dropout_1(batch_3_n)
 
         dense_2 = Dense(128, activation='relu')
         dense_2_p = dense_2(dropout_1_p)
         dense_2_n = dense_2(dropout_1_n)
 
-        dropout_2 = Dropout(0.5)(dense_2)
-        dropout_2_p = dropout_2(dense_2_p)
-        dropout_2_n = dropout_2(dense_2_n)
+        batch_4 = BatchNormalization()
+        batch_4_p = batch_4(dense_2_p)
+        batch_4_n = batch_4(dense_2_n)
+
+        dropout_2 = Dropout(0.5)
+        dropout_2_p = dropout_2(batch_4_p)
+        dropout_2_n = dropout_2(batch_4_n)
 
         dense_3 = Dense(1)
         dense_3_n = dense_3(dropout_2_n)
@@ -57,10 +80,12 @@ class DQN:
 
         self.model = Model(inputs=[user_id_input_p, item_id_input_p,
             metadata_input_p, user_id_input_n, item_id_input_n,
-            metadata_input_n], outputs=y)
+            metadata_input_n], outputs=[dense_3_n, dense_3_p])
 
         def custom_loss(y_true, y_pred):
-            return
+            op1 = Subtract()(y_true)
+            op2 = Add()([op1, y_pred])
+            return Maximum(op2, K.zeros(op2.shape))
 
         self.model.compile(optimizer='adam', loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
