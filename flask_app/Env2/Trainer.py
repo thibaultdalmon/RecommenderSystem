@@ -1,4 +1,5 @@
 from Env2.DQN import DQN
+from Env2.Generator import DataGenerator
 
 
 class Trainer:
@@ -10,9 +11,11 @@ class Trainer:
 
     def train(self):
         state_history = self.interface.state_history
-        reward_history = self.interface.reward_history
+        rewards_history = self.interface.rewards_history
         action_history = self.interface.action_history
-        self.dqn.train(state_history, reward_history, action_history)
+        generator_train = DataGenerator(0.1, state_history, rewards_history, action_history)
+        generator_val = DataGenerator(0.1, state_history, rewards_history, action_history)
+        self.dqn.train(generator_train, generator_val)
 
     def reset(self):
         self.dqn.reset()

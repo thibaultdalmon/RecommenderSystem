@@ -4,20 +4,20 @@ import requests
 class Interface:
 
     def __init__(self, args):
-        self.base_url = 'http://{}'.format(args.ip_address_new_env)
+        self.base_url = 'http://{}'.format(args.ip_address_env_2)
         self.user_id = args.user_id
         self.url_reset = '{}/reset'.format(self.base_url)
         self.url_predict = '{}/predict'.format(self.base_url)
 
         r = requests.get(url=self.url_reset, params={'user_id': self.user_id})
         data = r.json()
-
         self.state_history = data['state_history']
-        self.reward_history = data['reward_history']
+        self.rewards_history = data['rewards_history']
         self.action_history = data['action_history']
 
         self.nb_items = data['nb_items']
         self.nb_users = data['nb_users']
+        self.nb_variables = len(self.state_history[0][0]) - 2
 
         self.next_state = data['next_state']
 
@@ -27,7 +27,7 @@ class Interface:
         data = r.json()
 
         self.state_history = data['state_history']
-        self.reward_history = data['reward_history']
+        self.rewards_history = data['rewards_history']
         self.action_history = data['action_history']
 
         self.nb_items = data['nb_items']

@@ -1,4 +1,4 @@
-from keras.layers import Input, Embedding, Flatten, Dot, Dense, Concatenate
+from keras.layers import Input, Embedding, Flatten, Dense, Concatenate
 from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
@@ -23,14 +23,14 @@ class DQN:
 
         embedding_size = 30
         user_embedding = Embedding(output_dim=embedding_size,
-            input_dim=interface.nb_users + 1,
-            input_length=1, name='user_embedding')
+                                   input_dim=interface.nb_users + 1,
+                                   input_length=1, name='user_embedding')
         user_embedding_p = user_embedding(user_id_input_p)
         user_embedding_n = user_embedding(user_id_input_n)
 
         embedding_item = Embedding(output_dim=embedding_size,
-            input_dim=interface.nb_items + 1,
-            input_length=1, name='item_embedding')
+                                   input_dim=interface.nb_items + 1,
+                                   input_length=1, name='item_embedding')
         item_embedding_p = embedding_item(item_id_input_p)
         item_embedding_n = embedding_item(item_id_input_n)
 
@@ -79,13 +79,13 @@ class DQN:
         dense_3_p = dense_3(dropout_2_p)
 
         self.model = Model(inputs=[user_id_input_p, item_id_input_p,
-            metadata_input_p, user_id_input_n, item_id_input_n,
-            metadata_input_n], outputs=[dense_3_n, dense_3_p])
+                                   metadata_input_p, user_id_input_n, item_id_input_n,
+                                   metadata_input_n], outputs=[dense_3_n, dense_3_p])
 
         def custom_loss(y_true, y_pred):
-            op1 = Subtract()(y_true)
-            op2 = Add()([op1, y_pred])
-            return Maximum(op2, K.zeros(op2.shape))
+            op1 = Subtract()([y_pred[0], y_pred[1]])
+            op2 = Add()([op1, K.ones((1))])
+            return Maximum()([op2, K.zeros((1))])
 
         self.model.compile(optimizer='adam', loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
@@ -95,14 +95,12 @@ class DQN:
 
     def train(self, generator_train, generator_val):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
-        self.model.fit_generator(generator = generator_train,
-                       batch_size = generator.batch_size, epochs=1,
-                       validation_data = generator_val,
-                       validation_steps = generator.steps,
-                       validation_freq = 1,
-                       shuffle=True, callbacks=[early_stopping],
-                       use_multiprocessing=True, workers=2,
-                       max_queue_size=32)
+        self.model.fit_generator(generator=generator_train,
+                                 epochs=1,
+                                 validation_data=generator_val,
+                                 shuffle=True, callbacks=[early_stopping],
+                                 use_multiprocessing=True, workers=2,
+                                 max_queue_size=32)
 
     def predict(self, user_id, item_id, metadata):
         return self.model.predict([user_id, item_id, metadata])
