@@ -61,7 +61,7 @@ class DQN:
 
         self.model = Model(inputs=[user_id_input_p, item_id_input_p,
             metadata_input_p, user_id_input_n, item_id_input_n,
-            metadata_input_n], outputs=[dense_3_p, dense_3_n])
+            metadata_input_n], outputs=[dense_3_n, dense_3_p])
 
         def custom_loss(y_true, y_pred):
             op1 = Subtract()(y_true)
