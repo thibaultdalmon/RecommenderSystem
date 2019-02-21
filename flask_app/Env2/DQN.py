@@ -1,4 +1,4 @@
-from keras.layers import (Input, Embedding, Flatten, Dot, Dense, Concatenate, Dropout)
+from keras.layers import (Input, Embedding, Flatten, Dot, Dense, Concatenate, Dropout, Subtract, Add, Maximum)
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
 import keras.backend as K
@@ -17,13 +17,17 @@ class DQN:
         metadata_input_n = Input(shape=(interface.nb_variables,), name='metadata_n')
 
         embedding_size = 30
-        user_embedding_p, user_embedding_n = Embedding(output_dim=embedding_size,
+        user_embedding = Embedding(output_dim=embedding_size,
             input_dim=interface.nb_users + 1,
-            input_length=1, name='user_embedding')(user_id_input_p, user_id_input_n)
+            input_length=1, name='user_embedding')
+        user_embedding_p = user_embedding(user_id_input_p)
+        user_embedding_n = user_embedding(user_id_input_n)
 
-        item_embedding_p, item_embedding_n = Embedding(output_dim=embedding_size,
+        embedding_item = Embedding(output_dim=embedding_size,
             input_dim=interface.nb_items + 1,
-            input_length=1, name='item_embedding')(item_id_input_p, item_id_input_n)
+            input_length=1, name='item_embedding')
+        item_embedding_p = embedding_item(item_id_input_p)
+        item_embedding_n = embedding_item(item_id_input_n)
 
         # reshape from shape: (batch_size, input_length, embedding_size)
         # to shape: (batch_size, input_length * embedding_size) which is
@@ -57,10 +61,12 @@ class DQN:
 
         self.model = Model(inputs=[user_id_input_p, item_id_input_p,
             metadata_input_p, user_id_input_n, item_id_input_n,
-            metadata_input_n], outputs=y)
+            metadata_input_n], outputs=[dense_3_p, dense_3_n])
 
         def custom_loss(y_true, y_pred):
-            return
+            op1 = Subtract()(y_true)
+            op2 = Add()([op1, y_pred])
+            return Maximum(op2, K.zeros(op2.shape))
 
         self.model.compile(optimizer='adam', loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
