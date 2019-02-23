@@ -14,13 +14,11 @@ class Data:
 
 class DataGenerator(Sequence):
 
-    def __init__(self, alpha, state_history, reward_history, action_history, batch_size=32, n_sample=1000, n_data_per_positive=30):
-        self.alpha = alpha
+    def __init__(self, state_history, reward_history, action_history, batch_size=32, n_data_per_positive=30):
         self.state_history = state_history
         self.reward_history = reward_history
         self.action_history = action_history
         self.batch_size = batch_size
-        self.n_sample = n_sample
         self.n_data_per_positive = n_data_per_positive
         self.nb_variables = len(self.state_history[0][0]) - 2
         self.positive_data = defaultdict(list)
@@ -32,7 +30,7 @@ class DataGenerator(Sequence):
         self._generate_data()
 
     def __len__(self):
-        return int(np.ceil(self.n_sample / self.batch_size))
+        return int(np.ceil(len(self.data) / self.batch_size))
 
     def __getitem__(self, idx):
         user_p = np.empty((self.batch_size, 1))
@@ -50,8 +48,7 @@ class DataGenerator(Sequence):
             item_n[i] = self.data[idx * self.batch_size + i][4]
             metadata_n[i] = self.data[idx * self.batch_size + i][5]
 
-        alphas = self.alpha * np.ones((self.batch_size, 1))
-        return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n], [alphas, alphas]]
+        return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n], [0, 0]]
 
     def on_epoch_end(self):
         # self._generate_data()
