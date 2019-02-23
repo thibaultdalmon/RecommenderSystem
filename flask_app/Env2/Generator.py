@@ -31,7 +31,7 @@ class DataGenerator(Sequence):
         self._generate_data()
 
     def __len__(self):
-        return int(self.n_sample / self.batch_size)
+        return int(np.ceil(self.n_sample / self.batch_size))
 
     def __getitem__(self, idx):
         user_p = np.empty((self.batch_size, 1))
