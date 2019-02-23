@@ -30,7 +30,7 @@ class DataGenerator(Sequence):
         self._generate_data()
 
     def __len__(self):
-        return int(np.ceil(len(self.data) / self.batch_size))
+        return int(np.floor(len(self.data) / self.batch_size))
 
     def __getitem__(self, idx):
         user_p = np.empty((self.batch_size, 1))
@@ -48,9 +48,11 @@ class DataGenerator(Sequence):
             item_n[i] = self.data[idx * self.batch_size + i][4]
             metadata_n[i] = self.data[idx * self.batch_size + i][5]
 
-        return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n], [0, 0]]
+        return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n],
+            [np.zeros((self.batch_size, 1)), np.zeros((self.batch_size, 1))]]
 
     def on_epoch_end(self):
+        print('fin epoch')
         # self._generate_data()
         np.random.shuffle(self.data)
         #pass

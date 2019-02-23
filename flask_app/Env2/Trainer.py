@@ -13,13 +13,21 @@ class Trainer:
         state_history = self.interface.state_history
         rewards_history = self.interface.rewards_history
         action_history = self.interface.action_history
-        generator_train = DataGenerator(0.1, state_history, rewards_history, action_history)
-        generator_val = DataGenerator(0.1, state_history, rewards_history, action_history)
+        generator_train = DataGenerator(state_history, rewards_history, action_history)
+        generator_val = DataGenerator(state_history, rewards_history, action_history)
         self.dqn.train(generator_train, generator_val)
 
     def reset(self):
         self.dqn.reset()
         self.train()
+        print("Prediction")
+        prediction = self.predict()
+        print(prediction)
 
-    def predict(self, user_id, item_id, metadata):
-        return self.dqn.predict(user_id, item_id, metadata).item()
+    def predict(self):
+        state_history = self.interface.state_history
+        rewards_history = self.interface.rewards_history
+        action_history = self.interface.action_history
+        generator_pred = DataGenerator(state_history, rewards_history,
+        action_history)
+        return self.dqn.predict(generator_pred).item()

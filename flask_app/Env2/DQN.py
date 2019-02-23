@@ -3,8 +3,11 @@ from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
-import keras.backend as K
 
+def custom_loss(y_true, y_pred):
+    import keras.backend as K
+    y = y_pred[0]-y_pred[1]
+    return K.mean(K.maximum(y+100,0))
 
 class DQN:
 
@@ -83,26 +86,23 @@ class DQN:
                                    metadata_input_p, user_id_input_n, item_id_input_n,
                                    metadata_input_n], outputs=[dense_3_n, dense_3_p])
 
-        def custom_loss(y_true, y_pred):
-            op1 = Subtract()([y_pred[0], y_pred[1]])
-            op2 = Add()([op1, 0.5*K.ones(1)])
-            loss = Maximum()([op2, K.zeros(1)])
-            return K.mean(loss)
-
-        self.model.compile(optimizer=Adam(1e-01), loss=custom_loss)
+        self.model.compile(optimizer=Adam(1e-05), loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
 
     def reset(self):
-        self.model = load_model('Env2/Models/initial_weight.h5')
+        self.model = load_model('Env2/Models/initial_weight.h5',
+                custom_objects={'custom_loss':custom_loss})
 
     def train(self, generator_train, generator_val):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
         self.model.fit_generator(generator=generator_train,
-                                 epochs=100,
+                                 epochs=10,
                                  validation_data=generator_val,
-                                 shuffle=True, #callbacks=[early_stopping],
+                                 shuffle=True, callbacks=[early_stopping],
                                  use_multiprocessing=True, workers=2,
                                  max_queue_size=32)
+        print('Fin training')
+        return
 
-    def predict(self, user_id, item_id, metadata):
-        return self.model.predict([user_id, item_id, metadata])
+    def predict(self, generator):
+        return self.model.predict_generator(generator,steps=1)
