@@ -14,7 +14,8 @@ class Data:
 
 class DataGenerator(Sequence):
 
-    def __init__(self, state_history, reward_history, action_history, batch_size=32, n_data_per_positive=30):
+    def __init__(self, state_history, reward_history, action_history, batch_size=32, n_data_per_positive=30,
+                 mode="training"):
         self.state_history = state_history
         self.reward_history = reward_history
         self.action_history = action_history
@@ -24,6 +25,7 @@ class DataGenerator(Sequence):
         self.positive_data = defaultdict(list)
         self.middle_data = defaultdict(list)
         self.negative_data = defaultdict(list)
+        self.mode = mode
         self.nb_positive = 0
         self._init_pos_neg()
         self.data = []
@@ -48,14 +50,17 @@ class DataGenerator(Sequence):
             item_n[i] = self.data[idx * self.batch_size + i][4]
             metadata_n[i] = self.data[idx * self.batch_size + i][5]
 
-        return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n],
-            [np.zeros((self.batch_size, 1)), np.zeros((self.batch_size, 1))]]
+        if self.mode == 'training':
+            return [user_p, item_p, metadata_p, user_n, item_n, metadata_n], [np.zeros((self.batch_size, 1)),
+                                                                              np.zeros((self.batch_size, 1))]
+        else:
+            return [user_p, item_p, metadata_p, user_n, item_n, metadata_n]
 
     def on_epoch_end(self):
         print('fin epoch')
         # self._generate_data()
-        np.random.shuffle(self.data)
-        #pass
+        # np.random.shuffle(self.data)
+        # pass
 
     def _init_pos_neg(self):
         for i, r in enumerate(self.reward_history):

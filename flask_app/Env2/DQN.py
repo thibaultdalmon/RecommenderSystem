@@ -7,7 +7,7 @@ from keras.optimizers import Adam
 def custom_loss(y_true, y_pred):
     import keras.backend as K
     y = y_pred[0]-y_pred[1]
-    return K.mean(K.maximum(y+100,0))
+    return K.mean(K.maximum(y+10,0))
 
 class DQN:
 
@@ -86,7 +86,7 @@ class DQN:
                                    metadata_input_p, user_id_input_n, item_id_input_n,
                                    metadata_input_n], outputs=[dense_3_n, dense_3_p])
 
-        self.model.compile(optimizer=Adam(1e-05), loss=custom_loss)
+        self.model.compile(optimizer=Adam(1e-03), loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
 
     def reset(self):
@@ -96,13 +96,13 @@ class DQN:
     def train(self, generator_train, generator_val):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
         self.model.fit_generator(generator=generator_train,
-                                 epochs=10,
+                                 epochs=50,
                                  validation_data=generator_val,
-                                 shuffle=True, callbacks=[early_stopping],
+                                 shuffle=True,  # callbacks=[early_stopping],
                                  use_multiprocessing=True, workers=2,
                                  max_queue_size=32)
         print('Fin training')
         return
 
     def predict(self, generator):
-        return self.model.predict_generator(generator,steps=1)
+        return self.model.predict_generator(generator, steps=1)
