@@ -1,7 +1,8 @@
-from keras.layers import Input, Embedding, Flatten, Dense, Concatenate
+from keras.layers import Input, Embedding, Flatten, Dense, Concatenate, merge
 from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
+from keras.optimizers import Adam
 import keras.backend as K
 
 
@@ -17,19 +18,19 @@ class DQN:
         item_id_input_n = Input(shape=(1,), name='item_n')
         metadata_input_n = Input(shape=(interface.nb_variables,), name='metadata_n')
 
-        batch_metadata = BatchNormalization()
-        batch_metadata_p = batch_metadata(metadata_input_p)
-        batch_metadata_n = batch_metadata(metadata_input_n)
+        batch_metadata_p = metadata_input_p
+        batch_metadata_n = metadata_input_n
 
-        embedding_size = 30
+        embedding_size = 10
         user_embedding = Embedding(output_dim=embedding_size,
-                                   input_dim=interface.nb_users + 1,
+                                   input_dim=interface.nb_users,
                                    input_length=1, name='user_embedding')
         user_embedding_p = user_embedding(user_id_input_p)
         user_embedding_n = user_embedding(user_id_input_n)
 
+        embedding_size = 5
         embedding_item = Embedding(output_dim=embedding_size,
-                                   input_dim=interface.nb_items + 1,
+                                   input_dim=interface.nb_items,
                                    input_length=1, name='item_embedding')
         item_embedding_p = embedding_item(item_id_input_p)
         item_embedding_n = embedding_item(item_id_input_n)
@@ -50,7 +51,7 @@ class DQN:
         batch_2_p = batch_2(conc_p)
         batch_2_n = batch_2(conc_n)
 
-        dense_1 = Dense(256, activation='relu')
+        dense_1 = Dense(8, activation='relu')
         dense_1_p = dense_1(batch_2_p)
         dense_1_n = dense_1(batch_2_n)
 
@@ -58,11 +59,11 @@ class DQN:
         batch_3_p = batch_3(dense_1_p)
         batch_3_n = batch_3(dense_1_n)
 
-        dropout_1 = Dropout(0.5)
+        dropout_1 = Dropout(0.2)
         dropout_1_p = dropout_1(batch_3_p)
         dropout_1_n = dropout_1(batch_3_n)
 
-        dense_2 = Dense(128, activation='relu')
+        dense_2 = Dense(8, activation='relu')
         dense_2_p = dense_2(dropout_1_p)
         dense_2_n = dense_2(dropout_1_n)
 
@@ -70,7 +71,7 @@ class DQN:
         batch_4_p = batch_4(dense_2_p)
         batch_4_n = batch_4(dense_2_n)
 
-        dropout_2 = Dropout(0.5)
+        dropout_2 = Dropout(0.2)
         dropout_2_p = dropout_2(batch_4_p)
         dropout_2_n = dropout_2(batch_4_n)
 
@@ -84,10 +85,11 @@ class DQN:
 
         def custom_loss(y_true, y_pred):
             op1 = Subtract()([y_pred[0], y_pred[1]])
-            op2 = Add()([op1, K.ones((1))])
-            return Maximum()([op2, K.zeros((1))])
+            op2 = Add()([op1, 0.5*K.ones(1)])
+            loss = Maximum()([op2, K.zeros(1)])
+            return K.mean(loss)
 
-        self.model.compile(optimizer='adam', loss=custom_loss)
+        self.model.compile(optimizer=Adam(1e-01), loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
 
     def reset(self):
@@ -96,9 +98,9 @@ class DQN:
     def train(self, generator_train, generator_val):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
         self.model.fit_generator(generator=generator_train,
-                                 epochs=1,
+                                 epochs=100,
                                  validation_data=generator_val,
-                                 shuffle=True, callbacks=[early_stopping],
+                                 shuffle=True, #callbacks=[early_stopping],
                                  use_multiprocessing=True, workers=2,
                                  max_queue_size=32)
 

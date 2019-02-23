@@ -53,8 +53,9 @@ class DataGenerator(Sequence):
         return [[user_p, item_p, metadata_p, user_n, item_n, metadata_n], [alphas, alphas]]
 
     def on_epoch_end(self):
-        self._generate_data()
+        # self._generate_data()
         np.random.shuffle(self.data)
+        #pass
 
     def _init_pos_neg(self):
         for i, r in enumerate(self.reward_history):
