@@ -24,8 +24,6 @@ class Trainer:
         print("Prediction")
         prediction = self.predict()
         res = np.concatenate([prediction[0], prediction[1]], axis=1)
-        print(res[:, 0] < res[:, 1])
-        print(res[:, 1] - res[:, 0] + 10 > 0)
         print(res)
 
     def predict(self):

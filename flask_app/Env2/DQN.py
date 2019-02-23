@@ -1,13 +1,19 @@
 from keras.layers import Input, Embedding, Flatten, Dense, Concatenate, merge
-from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization
+from keras.layers import Dropout, Subtract, Add, Maximum, BatchNormalization, Lambda
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
+import keras.backend as K
+
 
 def custom_loss(y_true, y_pred):
-    import keras.backend as K
-    y = y_pred[0]-y_pred[1]
-    return K.mean(K.maximum(y+10,0))
+    return K.mean(y_pred)
+
+def my_func(tensors):
+    out1 = tensors[0] - tensors[1] + 1
+    return K.maximum(out1, 0)
+
+
 
 class DQN:
 
@@ -24,14 +30,14 @@ class DQN:
         batch_metadata_p = metadata_input_p
         batch_metadata_n = metadata_input_n
 
-        embedding_size = 10
+        embedding_size = 30
         user_embedding = Embedding(output_dim=embedding_size,
                                    input_dim=interface.nb_users,
                                    input_length=1, name='user_embedding')
         user_embedding_p = user_embedding(user_id_input_p)
         user_embedding_n = user_embedding(user_id_input_n)
 
-        embedding_size = 5
+        embedding_size = 30
         embedding_item = Embedding(output_dim=embedding_size,
                                    input_dim=interface.nb_items,
                                    input_length=1, name='item_embedding')
@@ -54,7 +60,7 @@ class DQN:
         batch_2_p = batch_2(conc_p)
         batch_2_n = batch_2(conc_n)
 
-        dense_1 = Dense(8, activation='relu')
+        dense_1 = Dense(32, activation='relu')
         dense_1_p = dense_1(batch_2_p)
         dense_1_n = dense_1(batch_2_n)
 
@@ -66,7 +72,7 @@ class DQN:
         dropout_1_p = dropout_1(batch_3_p)
         dropout_1_n = dropout_1(batch_3_n)
 
-        dense_2 = Dense(8, activation='relu')
+        dense_2 = Dense(16, activation='relu')
         dense_2_p = dense_2(dropout_1_p)
         dense_2_n = dense_2(dropout_1_n)
 
@@ -82,21 +88,27 @@ class DQN:
         dense_3_n = dense_3(dropout_2_n)
         dense_3_p = dense_3(dropout_2_p)
 
-        self.model = Model(inputs=[user_id_input_p, item_id_input_p,
-                                   metadata_input_p, user_id_input_n, item_id_input_n,
-                                   metadata_input_n], outputs=[dense_3_n, dense_3_p])
+        lambda_layer = Lambda(my_func)
+        loss = lambda_layer([dense_3_n, dense_3_p])
 
-        self.model.compile(optimizer=Adam(1e-03), loss=custom_loss)
+        self.model = Model(inputs=[user_id_input_p, item_id_input_p, metadata_input_p, user_id_input_n, item_id_input_n,
+                                   metadata_input_n], outputs=[loss])
+
+        self.model_bis = Model(inputs=[user_id_input_p, item_id_input_p,
+                                       metadata_input_p, user_id_input_n, item_id_input_n,
+                                       metadata_input_n], outputs=[dense_3_n, dense_3_p])
+
+        self.model.compile(optimizer=Adam(1e-02), loss=custom_loss)
         self.model.save('Env2/Models/initial_weight.h5')
 
     def reset(self):
         self.model = load_model('Env2/Models/initial_weight.h5',
-                custom_objects={'custom_loss':custom_loss})
+                                custom_objects={'custom_loss': custom_loss})
 
     def train(self, generator_train, generator_val):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
         self.model.fit_generator(generator=generator_train,
-                                 epochs=50,
+                                 epochs=40,
                                  validation_data=generator_val,
                                  shuffle=True,  # callbacks=[early_stopping],
                                  use_multiprocessing=True, workers=2,
@@ -105,4 +117,4 @@ class DQN:
         return
 
     def predict(self, generator):
-        return self.model.predict_generator(generator, steps=1)
+        return self.model_bis.predict_generator(generator, steps=1)

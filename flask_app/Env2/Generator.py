@@ -51,14 +51,13 @@ class DataGenerator(Sequence):
             metadata_n[i] = self.data[idx * self.batch_size + i][5]
 
         if self.mode == 'training':
-            return [user_p, item_p, metadata_p, user_n, item_n, metadata_n], [np.zeros((self.batch_size, 1)),
-                                                                              np.zeros((self.batch_size, 1))]
+            return [user_p, item_p, metadata_p, user_n, item_n, metadata_n], [np.zeros((self.batch_size, 1))]
         else:
             return [user_p, item_p, metadata_p, user_n, item_n, metadata_n]
 
     def on_epoch_end(self):
         print('fin epoch')
-        # self._generate_data()
+        self._generate_data()
         # np.random.shuffle(self.data)
         # pass
 
