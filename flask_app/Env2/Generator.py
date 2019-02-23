@@ -14,13 +14,14 @@ class Data:
 
 class DataGenerator(Sequence):
 
-    def __init__(self, alpha, state_history, reward_history, action_history, batch_size=32, n_sample=1000):
+    def __init__(self, alpha, state_history, reward_history, action_history, batch_size=32, n_sample=1000, n_data_per_positive=30):
         self.alpha = alpha
         self.state_history = state_history
         self.reward_history = reward_history
         self.action_history = action_history
         self.batch_size = batch_size
         self.n_sample = n_sample
+        self.n_data_per_positive = n_data_per_positive
         self.nb_variables = len(self.state_history[0][0]) - 2
         self.positive_data = defaultdict(list)
         self.middle_data = defaultdict(list)
@@ -73,14 +74,17 @@ class DataGenerator(Sequence):
 
     def _generate_data(self):
         self.data = []
-        for user_p, l_pos_data in self.positive_data.items():
-            for pos_data in l_pos_data:
-                neg_data = np.random.choice(self.negative_data[user_p] + self.middle_data[user_p])
-                self.data.append((pos_data.user_id, pos_data.item_id, pos_data.metadata, neg_data.user_id,
-                                  neg_data.item_id, neg_data.metadata))
+        for _ in range(self.n_data_per_positive):
+            for user_p, l_pos_data in self.positive_data.items():
+                for pos_data in l_pos_data:
+                    neg_data = np.random.choice(self.negative_data[user_p] + self.middle_data[user_p])
+                    self.data.append((pos_data.user_id, pos_data.item_id, pos_data.metadata, neg_data.user_id,
+                                      neg_data.item_id, neg_data.metadata))
+        """
         for user_p, l_pos_data in self.middle_data.items():
             if len(self.negative_data[user_p]) > 0:
                 for pos_data in l_pos_data:
                     neg_data = np.random.choice(self.negative_data[user_p])
                     self.data.append((pos_data.user_id, pos_data.item_id, pos_data.metadata, neg_data.user_id,
                                       neg_data.item_id, neg_data.metadata))
+        """
