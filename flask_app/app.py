@@ -37,6 +37,11 @@ elif args.use_env == 2:
 else:
     raise Exception('Unknown environment: {}'.format(args.use_env))
 
+@app.route("/reset", methods=['GET', 'POST'])
+def reset():
+    interface.reset()
+    trainer.reset()
+
 @app.route("/train", methods=['GET', 'POST'])
 def train():
     data = request.get_json(force=True)
