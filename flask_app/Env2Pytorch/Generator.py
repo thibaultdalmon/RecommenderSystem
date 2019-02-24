@@ -1,7 +1,13 @@
 import torch
 from torch.utils.data import Dataset
 
-from collections import namedtuple
+
+class PosNegData:
+
+    def __init__(self, pos_data, neg_data, weight):
+        self.pos = pos_data
+        self.neg = neg_data
+        self.weight = weight
 
 
 class Data:
@@ -18,7 +24,6 @@ class DataGenerator(Dataset):
         self.state_history = state_history
         self.reward_history = reward_history
         self.action_history = action_history
-        self.pos_neg = namedtuple('pos_neg', ['pos', 'neg'])
         self.data = []
         self._init_pos_neg()
 
@@ -33,35 +38,36 @@ class DataGenerator(Dataset):
             if r > 0:
                 user_id = self.state_history[i][0][0]
                 action = self.action_history[i]
-                pos_data = Data(user_id=user_id, item_id=self.state_history[i][action][1], metadata=self.state_history[i][action][2:])
+                pos_data = Data(user_id=user_id, item_id=self.state_history[i][action][1],
+                                metadata=self.state_history[i][action][2:])
                 for j, state in enumerate(self.state_history[i]):
                     item_id = state[1]
                     metadata = state[2:]
                     data = Data(user_id=user_id, item_id=item_id, metadata=metadata)
                     if j != action:
-                        self.data.append(self.pos_neg(pos_data, data))
+                        self.data.append(PosNegData(pos_data, data, 1))
 
     def add_data(self, state, action, reward):
         if reward > 0:
             user_id = state[0][0]
-            print(len(state), action)
             pos_data = Data(user_id=user_id, item_id=state[action][1], metadata=state[action][2:])
             for j, my_state in enumerate(state):
                 item_id = my_state[1]
                 metadata = my_state[2:]
                 data = Data(user_id=user_id, item_id=item_id, metadata=metadata)
                 if j != action:
-                    self.data.append(self.pos_neg(pos_data, data))
+                    self.data.append(PosNegData(pos_data, data, 1))
 
 
 def collate_data_pos_neg(list_of_data):
+    raw_data = [data for data in list_of_data]
     user_id_pos = torch.stack([data.pos.user_id for data in list_of_data])
     item_id_pos = torch.stack([data.pos.item_id for data in list_of_data])
     metadata_pos = torch.stack([data.pos.metadata for data in list_of_data])
     user_id_neg = torch.stack([data.neg.user_id for data in list_of_data])
     item_id_neg = torch.stack([data.neg.item_id for data in list_of_data])
     metadata_neg = torch.stack([data.neg.metadata for data in list_of_data])
-    return {'user_id_pos': user_id_pos, 'item_id_pos': item_id_pos, 'metadata_pos': metadata_pos,
+    return {'user_id_pos': user_id_pos, 'item_id_pos': item_id_pos, 'metadata_pos': metadata_pos, 'raw_data': raw_data,
             'user_id_neg': user_id_neg, 'item_id_neg': item_id_neg, 'metadata_neg': metadata_neg}
 
 
