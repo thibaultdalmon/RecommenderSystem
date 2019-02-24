@@ -20,11 +20,16 @@ class Trainer:
 
     def reset(self):
         self.dqn.reset()
+        prediction = self.predict()
+        res1 = np.concatenate([prediction[0], prediction[1]], axis=1)
+        self.train()
+        prediction = self.predict()
+        res2 = np.concatenate([prediction[0], prediction[1]], axis=1)
         self.train()
         print("Prediction")
         prediction = self.predict()
-        res = np.concatenate([prediction[0], prediction[1]], axis=1)
-        print(res)
+        res3 = np.concatenate([prediction[0], prediction[1]], axis=1)
+        print(np.concatenate([res1, res2, res3], axis=1))
 
     def predict(self):
         state_history = self.interface.state_history

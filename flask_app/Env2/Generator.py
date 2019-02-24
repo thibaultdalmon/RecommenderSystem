@@ -57,7 +57,8 @@ class DataGenerator(Sequence):
 
     def on_epoch_end(self):
         print('fin epoch')
-        self._generate_data()
+        print(self.data[0])
+        # self._generate_data()
         # np.random.shuffle(self.data)
         # pass
 
@@ -67,7 +68,7 @@ class DataGenerator(Sequence):
             action = self.action_history[i]
             for state in self.state_history[i]:
                 item = state[1]
-                metadata = state[2:]
+                metadata = [0 for _ in range(self.nb_variables)] # state[2:]
                 if item == action and r > 0:
                     self.positive_data[user].append(Data(user_id=user, item_id=item, metadata=metadata))
                 elif item == action and r <= 0:

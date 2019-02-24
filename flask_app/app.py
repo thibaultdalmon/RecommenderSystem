@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
-from Env0.Interface import Interface as Interface0
-from Env0.Trainer import Trainer as Trainer0
-from Env1.Interface import Interface as Interface1
-from Env1.Trainer import Trainer as Trainer1
-from Env2.Interface import Interface as Interface2
-from Env2.Trainer import Trainer as Trainer2
+# from Env0.Interface import Interface as Interface0
+# from Env0.Trainer import Trainer as Trainer0
+# from Env1.Interface import Interface as Interface1
+# from Env1.Trainer import Trainer as Trainer1
+from Env2Pytorch.Interface import Interface as Interface2
+from Env2Pytorch.Trainer import Trainer as Trainer2
 
 import numpy as np
 
