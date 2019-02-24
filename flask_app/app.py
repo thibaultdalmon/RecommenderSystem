@@ -37,27 +37,18 @@ elif args.use_env == 2:
 else:
     raise Exception('Unknown environment: {}'.format(args.use_env))
 
-
-@app.route("/train")
-def reset():
-    interface.reset()
-    trainer.reset()
-    return "done"
-
 @app.route("/train", methods=['GET', 'POST'])
 def train():
-    nb_users = int(request.args.get('nb_users'))
-    nb_items = int(request.args.get('nb_items'))
-    user_history = request.args.get('user_history')
-    item_history = request.args.get('item_history')
-    rating_history = request.args.get('rating_history')
+    data = request.get_json(force=True)
+    interface.item_history = data['item_history']
+    interface.rating_history = data['rating_history']
+    interface.user_history = data['user_history']
 
-    interface.nb_users = nb_users
-    interface.nb_items = nb_items
-    interface.user_history = user_history
-    interface.item_history = item_history
-    interface.rating_history = rating_history
-    trainer = Trainer0(interface)
+    interface.nb_items = data['nb_items']
+    interface.nb_users = data['nb_users']
+
+    interface.next_user = data['next_user']
+    interface.next_item = data['next_item']
     trainer.reset()
 
 

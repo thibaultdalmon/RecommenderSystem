@@ -6,7 +6,6 @@ class Trainer:
     def __init__(self, interface):
         self.interface = interface
         self.dqn = DQN(interface)
-        self.train()
 
     def train(self):
         item_history = self.interface.item_history
