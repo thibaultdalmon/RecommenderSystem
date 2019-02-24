@@ -28,15 +28,15 @@ class DQN:
 
         self.model = Model(inputs=[user_id_input, item_id_input], outputs=y)
         self.model.compile(optimizer='adam', loss='mean_squared_error')
-        self.model.save('Env0/Models/initial_weight.h5')
+        self.model.save('Env0/initial_weight.h5')
 
     def reset(self):
-        self.model = load_model('Env0/Models/initial_weight.h5')
+        self.model = load_model('Env0/initial_weight.h5')
 
     def train(self, user_id_train, item_id_train, rating_train):
         early_stopping = EarlyStopping(monitor='val_loss', patience=2)
         self.model.fit([user_id_train, item_id_train], rating_train,
-                       batch_size=64, epochs=1, validation_split=0.1,
+                       batch_size=64, epochs=20, validation_split=0.1,
                        shuffle=True, callbacks=[early_stopping])
 
     def predict(self, user_id, item_id):

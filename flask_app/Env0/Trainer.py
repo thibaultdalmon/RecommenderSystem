@@ -18,5 +18,5 @@ class Trainer:
         self.dqn.reset()
         self.train()
 
-    def predict(self, user_id, item_id, metadata):
+    def predict(self, user_id, item_id):
         return self.dqn.predict(user_id, item_id).item()

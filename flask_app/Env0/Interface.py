@@ -4,7 +4,7 @@ import requests
 class Interface:
 
     def __init__(self, args):
-        self.base_url = 'http://{}'.format(args.ip_address_old_env)
+        self.base_url = 'http://{}'.format(args.ip_address_env_0)
         self.user_id = args.user_id
         self.reset()
 

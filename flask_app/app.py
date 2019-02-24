@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
-# from Env0.Interface import Interface as Interface0
-# from Env0.Trainer import Trainer as Trainer0
+from Env0.Interface import Interface as Interface0
+from Env0.Trainer import Trainer as Trainer0
 # from Env1.Interface import Interface as Interface1
 # from Env1.Trainer import Trainer as Trainer1
-from Env2Pytorch.Interface import Interface as Interface2
-from Env2Pytorch.Trainer import Trainer as Trainer2
+# from Env2Pytorch.Interface import Interface as Interface2
+# from Env2Pytorch.Trainer import Trainer as Trainer2
 
 import numpy as np
 
@@ -21,7 +21,7 @@ args.ip_address_env_0 = '52.47.62.31'
 args.ip_address_env_1 = '35.180.254.42'
 args.ip_address_env_2 = '35.180.178.243'
 
-args.use_env = 2
+args.use_env = 0
 
 interface = None
 trainer = None
@@ -38,7 +38,7 @@ else:
     raise Exception('Unknown environment: {}'.format(args.use_env))
 
 
-@app.route("/reset")
+@app.route("/train")
 def reset():
     interface.reset()
     trainer.reset()
@@ -47,14 +47,12 @@ def reset():
 
 @app.route("/predict", methods=['GET', 'POST'])
 def predict():
-    user_id = np.array([[float(request.args.get('user_id'))]])
-    item_id = np.array([[float(request.args.get('item_id'))]])
-    metadata = np.array([[float(request.args.get('metadata'))]])
-    predicted_score = trainer.predict(user_id, item_id, metadata)
+    user = np.array([[float(request.args.get('user'))]])
+    item = np.array([[float(request.args.get('item'))]])
+    predicted_score = trainer.predict(user, item)
     d = {'predicted_score': predicted_score}
     return jsonify(d)
 
 
 if __name__ == '__main__':
-    reset()
-    # app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)
