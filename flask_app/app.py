@@ -44,6 +44,22 @@ def reset():
     trainer.reset()
     return "done"
 
+@app.route("/train", methods=['GET', 'POST'])
+def train():
+    nb_users = int(request.args.get('nb_users'))
+    nb_items = int(request.args.get('nb_items'))
+    user_history = request.args.get('user_history')
+    item_history = request.args.get('item_history')
+    rating_history = request.args.get('rating_history')
+
+    interface.nb_users = nb_users
+    interface.nb_items = nb_items
+    interface.user_history = user_history
+    interface.item_history = item_history
+    interface.rating_history = rating_history
+    trainer = Trainer0(interface)
+    trainer.reset()
+
 
 @app.route("/predict", methods=['GET', 'POST'])
 def predict():
