@@ -74,7 +74,7 @@ if __name__ == '__main__':
     args.user_id = 'R3EIFXNYY6XMBXBR01BK'
     args.ip_address_env_2 = '35.180.178.243'
 
-    parameters = pd.read_csv('../parameters.csv')[:3]
+    parameters = pd.read_csv('../parameters.csv')
 
     n_heurisitc = parameters.shape[0]
     nb_iter = 100
