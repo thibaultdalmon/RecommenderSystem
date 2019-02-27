@@ -1,5 +1,4 @@
 import requests
-from tqdm import tqdm
 
 
 class Interface:

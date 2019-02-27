@@ -4,32 +4,28 @@ from torch.nn import Embedding, Linear, Bilinear, BatchNorm1d, ReLU, Dropout
 
 class SiameseNetwork(nn.Module):
 
-    def __init__(self, interface):
+    def __init__(self, interface, user_embedding_dim=10, item_embedding_dim=10, user_meta_dim=15, item_meta_dim=15,
+                 meta_meta_dim=30, dense_1_dim=32, dense_2_dim=15, dropout=0.5):
         super(SiameseNetwork, self).__init__()
-
-        user_embedding_dim = 10
-        item_embedding_dim = 10
-        user_meta_dim = 15
-        item_meta_dim = 15
-        meta_meta_dim = 30
-        dense_1_dim = 32
-        dense_2_dim = 15
         out_dim = 1
 
         self.embedding_user = Embedding(num_embeddings=interface.nb_users, embedding_dim=user_embedding_dim)
         self.embedding_item = Embedding(num_embeddings=interface.nb_items, embedding_dim=item_embedding_dim)
-        self.concat_user_meta = Bilinear(in1_features=user_embedding_dim, in2_features=interface.nb_variables, out_features=user_meta_dim)
-        self.concat_item_meta = Bilinear(in1_features=item_embedding_dim, in2_features=interface.nb_variables, out_features=item_meta_dim)
-        self.concat_meta_meta = Bilinear(in1_features=user_meta_dim, in2_features=item_meta_dim, out_features=meta_meta_dim)
+        self.concat_user_meta = Bilinear(in1_features=user_embedding_dim, in2_features=interface.nb_variables,
+                                         out_features=user_meta_dim)
+        self.concat_item_meta = Bilinear(in1_features=item_embedding_dim, in2_features=interface.nb_variables,
+                                         out_features=item_meta_dim)
+        self.concat_meta_meta = Bilinear(in1_features=user_meta_dim, in2_features=item_meta_dim,
+                                         out_features=meta_meta_dim)
         self.batch_norm_0 = BatchNorm1d(num_features=meta_meta_dim)
-        self.dropout_0 = Dropout(0.5)
+        self.dropout_0 = Dropout(dropout)
         self.dense_1 = Linear(in_features=meta_meta_dim, out_features=dense_1_dim)
         self.relu_1 = ReLU()
-        self.dropout_1 = Dropout(0.5)
+        self.dropout_1 = Dropout(dropout)
         self.batch_norm_1 = BatchNorm1d(num_features=dense_1_dim)
         self.dense_2 = Linear(in_features=dense_1_dim, out_features=dense_2_dim)
         self.relu_2 = ReLU()
-        self.dropout_2 = Dropout(0.5)
+        self.dropout_2 = Dropout(dropout)
         self.batch_norm_2 = BatchNorm1d(num_features=dense_2_dim)
         self.dense_3 = Linear(in_features=dense_2_dim, out_features=out_dim)
 

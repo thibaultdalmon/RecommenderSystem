@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+import numpy as np
 
 
 class PosNegData:
@@ -45,7 +46,7 @@ class DataGenerator(Dataset):
                     metadata = state[2:]
                     data = Data(user_id=user_id, item_id=item_id, metadata=metadata)
                     if j != action:
-                        self.data.append(PosNegData(pos_data, data, 1))
+                        self.data.append(PosNegData(pos_data, data, 1e9))
 
     def add_data(self, state, action, reward):
         if reward > 0:
@@ -56,7 +57,7 @@ class DataGenerator(Dataset):
                 metadata = my_state[2:]
                 data = Data(user_id=user_id, item_id=item_id, metadata=metadata)
                 if j != action:
-                    self.data.append(PosNegData(pos_data, data, 1))
+                    self.data.append(PosNegData(pos_data, data, 1e9))
 
 
 def collate_data_pos_neg(list_of_data):
